@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>美容院選択アンケート</title>
+<style>
+ body { font-family: sans-serif; text-align: center; }
+ .box { border: 1px solid #ccc; padding: 15px; margin: 10px; width: 40%; display: inline-block; }
+ button { font-size: 18px; padding: 10px 30px; margin: 10px; }
+</style>
+</head>
+
+<body>
+
+<h2 id="question">どちらの美容院が良いですか？</h2>
+<div id="choices"></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz83y4k43BE63qToV87I0QMHSFhupZcI26DAnU2TOf6hWu-XBOpRaMt6WaRFK9Gl4iL/exec";
+
+const profiles = [
+ {id:1, tech:"普通", time:30, insta:"少ない", price:1000},
+ {id:2, tech:"希望通り", time:60, insta:"豊富", price:1000},
+ {id:3, tech:"普通", time:60, insta:"豊富", price:3000},
+ {id:4, tech:"希望通り", time:30, insta:"少ない", price:3000},
+ {id:5, tech:"普通", time:60, insta:"少ない", price:5000},
+ {id:6, tech:"希望通り", time:30, insta:"豊富", price:5000},
+ {id:7, tech:"普通", time:30, insta:"豊富", price:7000},
+ {id:8, tech:"希望通り", time:60, insta:"少ない", price:7000}
+];
+
+let count = 0;
+const maxQ = 8;
+let results = [];
+
+function shuffle(arr) {
+ return arr.sort(() => Math.random() - 0.5);
+}
+
+function showQuestion() {
+ if (count >= maxQ) return finishSurvey();
+
+ const [A, B] = shuffle([...profiles]).slice(0,2);
+
+ document.getElementById("choices").innerHTML = `
+  <div class="box">
+   <h3>美容院A</h3>
+   技術：${A.tech}<br>
+   時間：${A.time}分<br>
+   インスタ投稿：${A.insta}<br>
+   料金：${A.price}円<br><br>
+   <button onclick="answer('A', ${A.id}, ${B.id})">Aを選ぶ</button>
+  </div>
+
+  <div class="box">
+   <h3>美容院B</h3>
+   技術：${B.tech}<br>
+   時間：${B.time}分<br>
+   インスタ投稿：${B.insta}<br>
+   料金：${B.price}円<br><br>
+   <button onclick="answer('B', ${A.id}, ${B.id})">Bを選ぶ</button>
+  </div>
+ `;
+}
+
+function answer(choice, A_id, B_id) {
+ results.push({
+   question: count + 1,
+   A_id: A_id,
+   B_id: B_id,
+   choice: choice
+ });
+ count++;
+ showQuestion();
+}
+
+function finishSurvey() {
+ fetch(GAS_URL, {
+   method: "POST",
+   body: JSON.stringify(results),
+   headers: {"Content-Type": "application/json"}
+ }).then(() => {
+   document.body.innerHTML = "<h2>ご協力ありがとうございました。</h2>";
+ }).catch(() => {
+   alert("送信に失敗しました。通信環境を確認してください。");
+ });
+}
+
+showQuestion();
+</script>
+
+</body>
+</html>
